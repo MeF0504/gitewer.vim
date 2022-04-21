@@ -18,6 +18,24 @@ call dein#add('MeF0504/gitewer.vim')
 or do something like this.
 
 ## Usage
+``` vim
+:Gitewer command [options]
+```
+
+commands and available options:
+
+- help
+    - show help strings.
+- log [dir/file [dir/file ...]];
+    - show commit logs
+- status [dir/file [dir/file ...]];
+    - show working-tree status
+- show [file/dir/hash]
+    - show various types of objects
+- diff [file] [hash1] [hash2]
+    - show changes between the file in current status and that in hash1, or the file in hash1 and that in hash2. default: file=current file, hash1=HEAD, hash2=nothing
+- blame
+    - show what revision and author last modified each line of a current file
 
 ## Options
 
