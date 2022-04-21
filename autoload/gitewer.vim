@@ -27,7 +27,7 @@ function! s:show_help() abort
     echo '  show [file/dir/hash]'
     echo "\t show various types of objects"
     echo '  diff [file] [hash1] [hash2]'
-    echo "\t show changes between commits of file. default: file=current file, hash1=current status, hash2=HEAD"
+    echo "\t show changes between the file in current status and that in hash1, or the file in hash1 and that in hash2. default: file=current file, hash1=HEAD, hash2=nothing"
     echo '  blame'
     echo "\t show what revision and author last modified each line of a current file"
 endfunction
@@ -260,21 +260,21 @@ endfunction
 
 function! s:gitewer_highlight() abort
     if &background == 'dark'
-        highlight default GitewerAuthor guifg=Cyan
-        highlight default GitewerDate guifg=Yellow
-        highlight default GitewerCol1 guifg=Red
-        highlight default GitewerCol2 guifg=Green
-        highlight default GitewerCol3 guifg=Magenta
-        highlight default GitewerCommit guifg=Silver
-        highlight default GitewerFile guifg=Green
+        highlight default GitewerAuthor guifg=Cyan ctermfg=14
+        highlight default GitewerDate guifg=Yellow ctermfg=11
+        highlight default GitewerCol1 guifg=Red ctermfg=9
+        highlight default GitewerCol2 guifg=Green ctermfg=10
+        highlight default GitewerCol3 guifg=Magenta ctermfg=13
+        highlight default GitewerCommit guifg=Silver ctermfg=7
+        highlight default GitewerFile guifg=Green ctermfg=2
     else
-        highlight default GitewerAuthor guifg=Blue
-        highlight default GitewerDate guifg=Green
-        highlight default GitewerCol1 guifg=Red
-        highlight default GitewerCol2 guifg=Green
-        highlight default GitewerCol3 guifg=Magenta
-        highlight default GitewerCommit guifg=Silver
-        highlight default GitewerFile guifg=Green
+        highlight default GitewerAuthor guifg=Blue ctermfg=4
+        highlight default GitewerDate guifg=Yellow ctermfg=3
+        highlight default GitewerCol1 guifg=Red ctermfg=9
+        highlight default GitewerCol2 guifg=Green ctermfg=10
+        highlight default GitewerCol3 guifg=Magenta ctermfg=13
+        highlight default GitewerCommit guifg=Silver ctermfg=7
+        highlight default GitewerFile guifg=Green ctermfg=2
     endif
     highlight default link GitewerAdd DiffAdd
     highlight default link GitewerDelete DiffDelete
