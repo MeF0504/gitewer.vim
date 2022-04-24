@@ -139,8 +139,11 @@ function! gitewer#log(mod, ...) abort
     endif
 
     let size = get(g:, 'gitewer_hist_size', 100)
-    let log_cmd = ['git', 'log', '--graph', "--pretty=format:%h %aI (%an):| %s", '-'..size]
+    let log_cmd = ['git', 'log', '--graph', '--pretty="format:%h %aI (%an):| %s"', '-'..size]
     let log_cmd += a:000
+    if !has('nvim')
+        let log_cmd = join(log_cmd, ' ')
+    endif
     let res = systemlist(log_cmd)
     if empty(a:mod)
         let mod = 'tab'
@@ -159,6 +162,9 @@ function! gitewer#show(mod, hash_file) abort
     endif
 
     let show_cmd = ['git', 'show', a:hash_file]
+    if !has('nvim')
+        let show_cmd = join(show_cmd, ' ')
+    endif
     let res = systemlist(show_cmd)
 
     if empty(a:mod)
@@ -183,6 +189,9 @@ function! gitewer#status(mod, ...) abort
     endif
 
     let status_cmd = ['git', 'status']+a:000
+    if !has('nvim')
+        let status_cmd = join(status_cmd, ' ')
+    endif
     let res = systemlist(status_cmd)
     if empty(a:mod)
         let mod = 'tab'
@@ -207,6 +216,9 @@ function! gitewer#diff(file, hash1, hash2) abort
 
     if !empty(a:hash1)
         let diff_cmd = ['git', 'show', printf('%s:%s', a:hash1, a:file)]
+        if !has('nvim')
+            let diff_cmd = join(diff_cmd, ' ')
+        endif
         let res = systemlist(diff_cmd)
         call <SID>buf_create('tab', '', printf('diff:%s-%s', a:file, a:hash1), res)
         $delete _
@@ -217,6 +229,9 @@ function! gitewer#diff(file, hash1, hash2) abort
     let ft = &filetype
 
     let diff_cmd = ['git', 'show', printf('%s:%s', a:hash2, a:file)]
+    if !has('nvim')
+        let diff_cmd = join(diff_cmd, ' ')
+    endif
     let res = systemlist(diff_cmd)
     call <SID>buf_create('vertical', '', printf('diff:%s-%s', a:file, a:hash2), res)
     let &filetype = ft
@@ -241,6 +256,9 @@ function! gitewer#blame(mod) abort
     let blame_cmd = ['git', 'blame', expand('%')]
     let lnum = line('.')
     normal! gg
+    if !has('nvim')
+        let blame_cmd = join(blame_cmd, ' ')
+    endif
     let res = systemlist(blame_cmd)
     let res = map(res, "v:val[:stridx(v:val, ')')]")
     call <SID>buf_create('topleft vertical', 35, 'blame', res)
