@@ -18,7 +18,12 @@ function! s:get_files(arg) abort
 endfunction
 
 function! s:get_hashes(arg) abort
-    let hashes = systemlist(['git', 'log', '--pretty=format:%h', '-'..get(g:, 'gitewer_hist_size', 100)])
+    let hash_cmd = ['git', 'log', '--pretty=format:%h', '-'..get(g:, 'gitewer_hist_size', 100)]
+    if !has('nvim')
+        let hash_cmd = join(hash_cmd, ' ')
+    endif
+    let hashes = systemlist(hash_cmd)
+    let hashes = ['HEAD', 'HEAD^', 'HEAD^^', 'HEAD~3', 'HEAD~4'] + hashes
     return filter(hashes, '!stridx(tolower(v:val), a:arg)')
 endfunction
 
