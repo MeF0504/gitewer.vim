@@ -139,9 +139,12 @@ function! gitewer#log(mod, ...) abort
     endif
 
     let size = get(g:, 'gitewer_hist_size', 100)
-    let log_cmd = ['git', 'log', '--graph', '--pretty="format:%h %aI (%an):| %s"', '-'..size]
-    let log_cmd += a:000
-    if !has('nvim')
+    if has('nvim')
+        let log_cmd = ['git', 'log', '--graph', '--pretty=format:%h %aI (%an):| %s', '-'..size]
+        let log_cmd += a:000
+    else
+        let log_cmd = ['git', 'log', '--graph', '--pretty="format:%h %aI (%an):| %s"', '-'..size]
+        let log_cmd += a:000
         let log_cmd = join(log_cmd, ' ')
     endif
     let res = systemlist(log_cmd)
