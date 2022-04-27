@@ -307,21 +307,73 @@ augroup Gitewer
     autocmd ColorScheme call s:gitewer_highlight()
 augroup END
 
+function! s:log_graph_syntax() abort
+    let idx_cnt = 1
+    let log_match = {'1-0': idx_cnt}
+    for i in range(2, line('$'))
+        let line = getline(i)
+        let end = match(line, '[0-9a-f]')-1
+        if end < 0
+            let end = len(line)-1
+        endif
+        for j in range(0, end)
+            if line[j] =~# '\s'
+                continue
+            elseif line[j] =~# '[|*]'
+                let pre_line = getline(i-1)
+                if pre_line[j] =~# '[|*]'
+                    let log_match[i.'-'.j] = log_match[(i-1).'-'.j]
+                elseif pre_line[j-1] == '\'
+                    let log_match[i.'-'.j] = log_match[(i-1).'-'.(j-1)]
+                elseif pre_line[j+1] == '/'
+                    let log_match[i.'-'.j] = log_match[(i-1).'-'.(j+1)]
+                endif
+            elseif line[j] == '/'
+                let pre_line = getline(i-1)
+                if pre_line[j+1] == '/'
+                    let log_match[i.'-'.j] = log_match[(i-1).'-'.(j+1)]
+                elseif pre_line[j+2] == '/'
+                    let log_match[i.'-'.j] = log_match[(i-1).'-'.(j+2)]
+                elseif pre_line[j+1] =~# '[|*]'
+                    let log_match[i.'-'.j] = log_match[(i-1).'-'.(j+1)]
+                elseif pre_line[j] == '\'
+                    let log_match[i.'-'.j] = log_match[(i-1).'-'.(j)]
+                endif
+            elseif line[j] == '\'
+                if line[j-1] =~# '[|*]'
+                    " new line
+                    let idx_cnt = (idx_cnt%3)+1
+                    let log_match[i.'-'.j] = idx_cnt
+                else
+                    let log_match[i.'-'.j] = log_match[(i-1).'-'.(j-1)]
+                endif
+            endif
+            if has_key(log_match, i.'-'.j)
+                call matchaddpos('GitewerCol'.log_match[i.'-'.j], [[i,j+1]])
+            endif
+        endfor
+    endfor
+endfunction
+
 function! s:log_syntax() abort
-    syntax match GitewerOpts "^|[ |\\/]* " contains=
-                \ GitewerAuthor, GitewerDate,
-                \ GitewerCol1, GitewerCol2, GitewerCol3
+    " syntax match GitewerOpts "^|[ |\\/]* " contains=
+    "             \ GitewerAuthor, GitewerDate,
+    "             \ GitewerCol1, GitewerCol2, GitewerCol3
     syntax match GitewerOpts /^.*:|/ contains=
                 \ GitewerAuthor, GitewerDate,
-                \ GitewerCol1, GitewerCol2, GitewerCol3
-    for i in range(10)
-        let bias = ''
-        let col_idx = i%3+1
-        let shift1 = 2*i+1
-        let shift2 = 2*i
-        execute 'syntax match GitewerCol'.col_idx.' "\%'.shift1.'v\zs[|\*\\/]\ze" contained'
-        execute 'syntax match GitewerCol'.col_idx.' "\%'.shift2.'v\zs[\\/]\ze" contained'
-    endfor
+                " \ GitewerCol1, GitewerCol2, GitewerCol3
+    if 0
+        for i in range(10)
+            let bias = ''
+            let col_idx = i%3+1
+            let shift1 = 2*i+1
+            let shift2 = 2*i
+            execute 'syntax match GitewerCol'.col_idx.' "\%'.shift1.'v\zs[|\*\\/]\ze" contained'
+            execute 'syntax match GitewerCol'.col_idx.' "\%'.shift2.'v\zs[\\/]\ze" contained'
+        endfor
+    else
+        call s:log_graph_syntax()
+    endif
     syntax region GitewerAuthor start=/(/ end=/):/ contained
     syntax region GitewerDate start=/[12][0-9][0-9][0-9]-/ end=/\([+-][01][0-9]:[0-9][0-9]\|Z\) / contained
     " syntax match GitewerHash /^.* \zs[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]\ze/
