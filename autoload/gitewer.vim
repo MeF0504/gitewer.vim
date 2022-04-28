@@ -310,12 +310,15 @@ augroup END
 function! s:log_graph_syntax() abort
     let idx_cnt = 1
     let log_match = {'1-0': idx_cnt}
+    call matchaddpos('GitewerCol'.log_match['1-0'], [[1,1]])
+
     for i in range(2, line('$'))
         let line = getline(i)
         let end = match(line, '[0-9a-f]')-1
         if end < 0
             let end = len(line)-1
         endif
+        let pos = {'1':[], '2':[], '3':[]}
         for j in range(0, end)
             if line[j] =~# '\s'
                 continue
@@ -349,8 +352,11 @@ function! s:log_graph_syntax() abort
                 endif
             endif
             if has_key(log_match, i.'-'.j)
-                call matchaddpos('GitewerCol'.log_match[i.'-'.j], [[i,j+1]])
+                call add(pos[log_match[i.'-'.j]], [i, j+1])
             endif
+        endfor
+        for id in keys(pos)
+            call matchaddpos('GitewerCol'.id, pos[id])
         endfor
     endfor
 endfunction
