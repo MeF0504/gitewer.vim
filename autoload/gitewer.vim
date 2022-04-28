@@ -140,10 +140,10 @@ function! gitewer#log(mod, ...) abort
 
     let size = get(g:, 'gitewer_hist_size', 100)
     if has('nvim')
-        let log_cmd = ['git', 'log', '--graph', '--pretty=format:%h %aI (%an):| %s', '-'..size]
+        let log_cmd = ['git', 'log', '--graph', '--pretty=format:%h%d %aI; (%an):| %s', '-'..size]
         let log_cmd += a:000
     else
-        let log_cmd = ['git', 'log', '--graph', '--pretty="format:%h %aI (%an):| %s"', '-'..size]
+        let log_cmd = ['git', 'log', '--graph', '--pretty="format:%h%d %aI; (%an):| %s"', '-'..size]
         let log_cmd += a:000
         let log_cmd = join(log_cmd, ' ')
     endif
@@ -360,7 +360,7 @@ function! s:log_syntax() abort
     "             \ GitewerAuthor, GitewerDate,
     "             \ GitewerCol1, GitewerCol2, GitewerCol3
     syntax match GitewerOpts /^.*:|/ contains=
-                \ GitewerAuthor, GitewerDate,
+                \ GitewerAuthor, GitewerDate, GitewerCommit
                 " \ GitewerCol1, GitewerCol2, GitewerCol3
     if 0
         for i in range(10)
@@ -374,8 +374,9 @@ function! s:log_syntax() abort
     else
         call s:log_graph_syntax()
     endif
-    syntax region GitewerAuthor start=/(/ end=/):/ contained
-    syntax region GitewerDate start=/[12][0-9][0-9][0-9]-/ end=/\([+-][01][0-9]:[0-9][0-9]\|Z\) / contained
+    syntax region GitewerAuthor start=/; \zs(/ end=/):/ contained
+    syntax region GitewerDate start=/[12][0-9][0-9][0-9]-/ end=/\([+-][01][0-9]:[0-9][0-9]\|Z\)\ze; / contained
+    syntax region GitewerCommit start=/[0-9a-f]\+ \zs(/ end=/)\ze [12][0-9][0-9][0-9]-/ contained
     " syntax match GitewerHash /^.* \zs[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]\ze/
 endfunction
 
