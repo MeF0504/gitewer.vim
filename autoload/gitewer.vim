@@ -45,7 +45,7 @@ function! <SID>buf_create(mod, width, name, text_list) abort
     execute printf('%s %snew %s', a:mod, a:width, name)
 
     setlocal modifiable
-    %delete _
+    silent %delete _
     setlocal noreadonly
     setlocal noswapfile
     setlocal nobackup
