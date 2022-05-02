@@ -304,7 +304,7 @@ endfunction
 call s:gitewer_highlight()
 augroup Gitewer
     autocmd!
-    autocmd ColorScheme call s:gitewer_highlight()
+    autocmd ColorScheme * call s:gitewer_highlight()
 augroup END
 
 function! s:log_graph_syntax() abort
@@ -346,6 +346,7 @@ function! s:log_graph_syntax() abort
                 if line[j-1] =~# '[|*]'
                     " new line
                     let idx_cnt = (idx_cnt%3)+1
+                    " let idx_cnt = (log_match[i.'-'.(j-1)]%3)+1
                     let log_match[i.'-'.j] = idx_cnt
                 else
                     let log_match[i.'-'.j] = log_match[(i-1).'-'.(j-1)]
