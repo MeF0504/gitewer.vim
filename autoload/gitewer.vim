@@ -126,6 +126,8 @@ function! gitewer#gitewer(mod, ...) abort
         call gitewer#diff(file, hash1, hash2)
     elseif a:1 == 'blame'
         call gitewer#blame(a:mod)
+    elseif a:1 == 'stash'
+        call gitewer#stash(a:mod)
     else
         " if get(g:, 'gitewer_anyargs', 0)
         "     call gitewer#any(a:mod)
@@ -279,6 +281,52 @@ function! gitewer#blame(mod) abort
     execute lnum
 endfunction
 
+function! gitewer#stash(mod) abort
+    if !s:is_git_repo()
+        return
+    endif
+
+    let stash_list_cmd = ['git', 'stash', 'list']
+    if !has('nvim')
+        let stash_list_cmd = join(stash_list_cmd, ' ')
+    endif
+    let res = systemlist(stash_list_cmd)
+    if len(res) == 0
+        echo 'no stash found.'
+        return
+    endif
+
+    for i in range(len(res))
+        echo (i+1).': '
+        echon res[i][stridx(res[i], ':')+2:]
+    endfor
+    let stash = input('select stash (empty cancel); ')
+    if empty(stash)
+        return
+    endif
+    let stash = str2nr(stash)-1
+    if stash<0 || stash>=len(res)
+        echo "\n"
+        echohl ErrorMsg
+        echo 'invalid number'
+        echohl None
+        return
+    endif
+    let stash_cmd = ['git', 'stash', 'show', '-p', 'stash@{'.stash.'}']
+    if !has('nvim')
+        let stash_cmd = join(stash_cmd, ' ')
+    endif
+    let res = systemlist(stash_cmd)
+    if empty(a:mod)
+        let mod = 'tab'
+    else
+        let mod = a:mod
+    endif
+    call <SID>buf_create(mod, '', 'stash', res)
+    call s:stash_syntax()
+    setlocal nomodifiable
+endfunction
+
 function! s:gitewer_highlight() abort
     if &background == 'dark'
         highlight default GitewerAuthor guifg=Cyan ctermfg=14
@@ -404,5 +452,11 @@ function! s:blame_syntax() abort
     syntax match GitewerFile /[0-9a-f]\+ \zs\S*\ze \+(/
     syntax match GitewerDate /\zs[12][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9] \S\+\ze.*/
     syntax match GitewerAuthor /(\zs.*\ze[12][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9] \S\+.*)/
+endfunction
+
+function! s:stash_syntax() abort
+    syntax match GitewerAdd    /^+.*/
+    syntax match GitewerDelete /^-.*/
+    syntax match GitewerFile   /^@@ .*/
 endfunction
 

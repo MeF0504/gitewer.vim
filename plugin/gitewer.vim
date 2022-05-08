@@ -30,7 +30,7 @@ endfunction
 function! s:gitewer_comp(arglead, cmdline, cursorpos) abort
     let arglead = tolower(a:arglead)
     let cmdline = tolower(a:cmdline)
-    let opts = split('help log show status diff blame', ' ')
+    let opts = split('help log show status diff blame stash', ' ')
     let cmdlines = split(cmdline, ' ', 1)
     let gi_idx = match(cmdlines, 'G.*')
     if len(cmdlines) <= gi_idx+2
