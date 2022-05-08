@@ -334,6 +334,8 @@ function! s:gitewer_highlight() abort
         highlight default GitewerCol1 guifg=Red ctermfg=9
         highlight default GitewerCol2 guifg=Green ctermfg=10
         highlight default GitewerCol3 guifg=Magenta ctermfg=13
+        highlight default GitewerCol4 guifg=Silver ctermfg=7
+        highlight default GitewerCol5 guifg=Gold ctermfg=220
         highlight default GitewerCommit guifg=Silver ctermfg=7
         highlight default GitewerFile guifg=Green ctermfg=2
     else
@@ -342,6 +344,8 @@ function! s:gitewer_highlight() abort
         highlight default GitewerCol1 guifg=Red ctermfg=9
         highlight default GitewerCol2 guifg=Green ctermfg=10
         highlight default GitewerCol3 guifg=Magenta ctermfg=13
+        highlight default GitewerCol4 guifg=Silver ctermfg=7
+        highlight default GitewerCol5 guifg=Gold ctermfg=220
         highlight default GitewerCommit guifg=Silver ctermfg=7
         highlight default GitewerFile guifg=Green ctermfg=2
     endif
@@ -357,6 +361,7 @@ augroup END
 
 function! s:log_graph_syntax() abort
     let idx_cnt = 1
+    let idx_max = 5
     let log_match = {'1-0': idx_cnt}
     call matchaddpos('GitewerCol'.log_match['1-0'], [[1,1]])
 
@@ -366,7 +371,10 @@ function! s:log_graph_syntax() abort
         if end < 0
             let end = len(line)-1
         endif
-        let pos = {'1':[], '2':[], '3':[]}
+        let pos = {}
+        for j in range(1, idx_max)
+            let pos[printf('%d', j)] = []
+        endfor
         for j in range(0, end)
             if line[j] =~# '\s'
                 continue
@@ -393,8 +401,8 @@ function! s:log_graph_syntax() abort
             elseif line[j] == '\'
                 if line[j-1] =~# '[|*]'
                     " new line
-                    let idx_cnt = (idx_cnt%3)+1
-                    " let idx_cnt = (log_match[i.'-'.(j-1)]%3)+1
+                    let idx_cnt = (idx_cnt%idx_max)+1
+                    " let idx_cnt = (log_match[i.'-'.(j-1)]%idx_max)+1
                     let log_match[i.'-'.j] = idx_cnt
                 else
                     let log_match[i.'-'.j] = log_match[(i-1).'-'.(j-1)]
