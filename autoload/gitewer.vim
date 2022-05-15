@@ -16,6 +16,14 @@ function! s:is_git_repo() abort
     endif
 endfunction
 
+function! s:is_hash(hash) abort
+    if match(a:hash, '[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]\+') == 0
+        return v:true
+    else
+        return v:false
+    endif
+endfunction
+
 function! s:show_help() abort
     echo 'usage; :Gitewer command [options]'
     echo "\n"
@@ -24,12 +32,14 @@ function! s:show_help() abort
     echo "\t show commit logs"
     echo '  status [dir/file [dir/file ...]];'
     echo "\t show working-tree status"
-    echo '  show [file/dir/hash]'
+    echo '  show [file/dir/hash [file/dir/hash ...]]'
     echo "\t show various types of objects"
     echo '  diff [file] [hash1] [hash2]'
     echo "\t show changes between the file in current status and that in hash1, or the file in hash1 and that in hash2. default: file=current file, hash1=HEAD, hash2=nothing"
     echo '  blame'
     echo "\t show what revision and author last modified each line of a current file"
+    echo '  stash'
+    echo"\t show the changes recorded in the stash as a diff"
 endfunction
 
 function! <SID>buf_create(mod, width, name, text_list) abort
@@ -161,12 +171,12 @@ function! gitewer#log(mod, ...) abort
     nnoremap <buffer> <silent> <Enter> <Cmd>call <SID>show_preview(<SID>get_hash())<CR>
 endfunction
 
-function! gitewer#show(mod, hash_file) abort
+function! gitewer#show(mod, ...) abort
     if !s:is_git_repo()
         return
     endif
 
-    let show_cmd = ['git', 'show', a:hash_file]
+    let show_cmd = ['git', 'show']+a:000
     if !has('nvim')
         let show_cmd = join(show_cmd, ' ')
     endif

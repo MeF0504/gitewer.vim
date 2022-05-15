@@ -24,7 +24,7 @@ function! s:get_hashes(arg) abort
     endif
     let hashes = systemlist(hash_cmd)
     let hashes = ['HEAD', 'HEAD^', 'HEAD^^', 'HEAD~3', 'HEAD~4'] + hashes
-    return filter(hashes, '!stridx(tolower(v:val), a:arg)')
+    return filter(hashes, '!stridx(v:val, a:arg)')
 endfunction
 
 function! s:gitewer_comp(arglead, cmdline, cursorpos) abort
@@ -42,10 +42,7 @@ function! s:gitewer_comp(arglead, cmdline, cursorpos) abort
         elseif cur_opt == 'log'
             return s:get_files(a:arglead)
         elseif cur_opt == 'show'
-            if len(cmdlines) == gi_idx+3
-                return s:get_files(a:arglead)+filter(s:get_hashes(a:arglead), 'match(a:cmdline, v:val)==-1')
-            else
-                return []
+            return s:get_files(a:arglead)+filter(s:get_hashes(a:arglead), 'match(a:cmdline, v:val)==-1')
             endif
         elseif cur_opt == 'status'
             return s:get_files(a:arglead)
