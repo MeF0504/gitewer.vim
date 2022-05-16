@@ -23,7 +23,7 @@ function! s:get_hashes(arg) abort
         let hash_cmd = join(hash_cmd, ' ')
     endif
     let hashes = systemlist(hash_cmd)
-    let hashes = ['HEAD', 'HEAD^', 'HEAD^^', 'HEAD~3', 'HEAD~4'] + hashes
+    let hashes = ['HEAD', 'HEAD^', 'HEAD^^'] + hashes
     return filter(hashes, '!stridx(v:val, a:arg)')
 endfunction
 
@@ -43,7 +43,6 @@ function! s:gitewer_comp(arglead, cmdline, cursorpos) abort
             return s:get_files(a:arglead)
         elseif cur_opt == 'show'
             return s:get_files(a:arglead)+filter(s:get_hashes(a:arglead), 'match(a:cmdline, v:val)==-1')
-            endif
         elseif cur_opt == 'status'
             return s:get_files(a:arglead)
         elseif cur_opt == 'diff'
