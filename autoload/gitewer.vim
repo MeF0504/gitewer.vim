@@ -350,13 +350,13 @@ function! s:gitewer_highlight() abort
         highlight default GitewerFile guifg=Green ctermfg=2
     else
         highlight default GitewerAuthor guifg=Blue ctermfg=4
-        highlight default GitewerDate guifg=Yellow ctermfg=3
+        highlight default GitewerDate ctermfg=135 guifg=#af8700
         highlight default GitewerCol1 guifg=Red ctermfg=9
         highlight default GitewerCol2 guifg=Green ctermfg=10
         highlight default GitewerCol3 guifg=Magenta ctermfg=13
         highlight default GitewerCol4 guifg=Silver ctermfg=7
         highlight default GitewerCol5 guifg=Gold ctermfg=220
-        highlight default GitewerCommit guifg=Silver ctermfg=7
+        highlight default GitewerCommit ctermfg=243 guifg=#767676
         highlight default GitewerFile guifg=Green ctermfg=2
     endif
     highlight default link GitewerAdd DiffAdd
