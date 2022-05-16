@@ -181,13 +181,14 @@ function! gitewer#show(mod, ...) abort
         let show_cmd = join(show_cmd, ' ')
     endif
     let res = systemlist(show_cmd)
+    let opt = join(map(deepcopy(a:000), 'substitute(v:val, "/", "-", "g")'), ',')
 
     if empty(a:mod)
         let mod = 'tab'
     else
         let mod = a:mod
     endif
-    call <SID>buf_create(mod, '', 'show', res)
+    call <SID>buf_create(mod, '', 'show:'..opt, res)
     call s:show_syntax()
     setlocal nomodifiable
 endfunction
