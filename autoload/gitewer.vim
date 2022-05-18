@@ -391,7 +391,10 @@ function! s:log_graph_syntax() abort
                 continue
             elseif line[j] =~# '[|*]'
                 let pre_line = getline(i-1)
-                if pre_line[j] =~# '[|*]'
+                if pre_line[j-1:j] == '\|'
+                    let idx_cnt = (idx_cnt%idx_max)+1
+                    let log_match[i.'-'.j] = idx_cnt
+                elseif pre_line[j] =~# '[|*]'
                     let log_match[i.'-'.j] = log_match[(i-1).'-'.j]
                 elseif pre_line[j-1] == '\'
                     let log_match[i.'-'.j] = log_match[(i-1).'-'.(j-1)]
@@ -410,7 +413,9 @@ function! s:log_graph_syntax() abort
                     let log_match[i.'-'.j] = log_match[(i-1).'-'.(j)]
                 endif
             elseif line[j] == '\'
-                if line[j-1] =~# '[|*]'
+                if line[j+1] == '|'
+                    let log_match[i.'-'.j] = log_match[(i-1).'-'.(j+1)]
+                elseif line[j-1] =~# '[|*]'
                     " new line
                     let idx_cnt = (idx_cnt%idx_max)+1
                     " let idx_cnt = (log_match[i.'-'.(j-1)]%idx_max)+1
