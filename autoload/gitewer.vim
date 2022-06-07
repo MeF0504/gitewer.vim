@@ -28,9 +28,9 @@ function! s:show_help() abort
     echo 'usage; :Gitewer command [options]'
     echo "\n"
     echo 'commands and available options:'
-    echo '  log [dir/file [dir/file ...]];'
+    echo '  log [dir/file [dir/file ...]]'
     echo "\t show commit logs"
-    echo '  status [dir/file [dir/file ...]];'
+    echo '  status'
     echo "\t show working-tree status"
     echo '  show [file/dir/hash [file/dir/hash ...]]'
     echo "\t show various types of objects"
@@ -87,7 +87,7 @@ function! gitewer#gitewer(mod, ...) abort
     if a:1 == 'help'
         call s:show_help()
     elseif a:1 == 'status'
-        call call('gitewer#status', [a:mod]+a:000[1:])
+        call call('gitewer#status', [a:mod])
     elseif a:1 == 'log'
         call call('gitewer#log', [a:mod]+a:000[1:])
     elseif a:1 == 'show'
@@ -199,24 +199,52 @@ function! <SID>show_preview(hash) abort
     setlocal previewwindow
 endfunction
 
-function! gitewer#status(mod, ...) abort
+function! gitewer#status(mod) abort
     if !s:is_git_repo()
         return
     endif
 
-    let status_cmd = ['git', 'status']+a:000
+    let status_cmd = ['git', 'status', '-sb']   " short & branch
     if !has('nvim')
         let status_cmd = join(status_cmd, ' ')
     endif
     let res = systemlist(status_cmd)
+    let res[0] = substitute(res[0], '##', 'branch:', '')
     if empty(a:mod)
-        let mod = 'tab'
+        let mod = 'topleft'
     else
         let mod = a:mod
     endif
     call <SID>buf_create(mod, '', 'status', res)
     setlocal nomodifiable
     call s:status_syntax()
+    nnoremap <buffer> <silent> <Enter> <Cmd>call <SID>show_file_status()<CR>
+endfunction
+
+function! s:show_file_status() abort
+    if line('.') == 1
+        return
+    endif
+    let fname = getline('.')[3:]
+    if !filereadable(fname)
+        return
+    endif
+
+    pclose
+    let diff_cmd = ['git', 'diff', fname]
+    if !has('nvim')
+        let diff_cmd = join(diff_cmd, ' ')
+    endif
+    let res = systemlist(diff_cmd)
+    if !empty(res)
+        call <SID>buf_create('botright vertical', '', 'status_detail', res)
+        call s:show_syntax()
+        setlocal nomodifiable
+    else
+        " untracked file?
+        execute 'botright vertical new '..fname
+    endif
+    setlocal previewwindow
 endfunction
 
 function! gitewer#diff(file, hash1, hash2) abort
@@ -351,6 +379,10 @@ function! s:gitewer_highlight() abort
         highlight default GitewerCol5 guifg=Gold ctermfg=220
         highlight default GitewerCommit guifg=Silver ctermfg=7
         highlight default GitewerFile guifg=Green ctermfg=2
+        highlight default GitewerUntracked guifg=Silver ctermfg=7
+        highlight default GitewerIgnored guifg=Grey30 ctermfg=239
+        highlight default GitewerUnstaged guifg=Red ctermfg=9
+        highlight default GitewerStaged guifg=Lime ctermfg=10
     else
         highlight default GitewerAuthor guifg=Blue ctermfg=4
         highlight default GitewerDate ctermfg=135 guifg=#af8700
@@ -361,6 +393,10 @@ function! s:gitewer_highlight() abort
         highlight default GitewerCol5 guifg=Gold ctermfg=220
         highlight default GitewerCommit ctermfg=243 guifg=#767676
         highlight default GitewerFile guifg=Green ctermfg=2
+        highlight default GitewerUntracked guifg=Silver ctermfg=7
+        highlight default GitewerIgnored guifg=Grey70 ctermfg=249
+        highlight default GitewerUnstaged guifg=Red ctermfg=9
+        highlight default GitewerStaged guifg=Green ctermfg=10
     endif
     highlight default link GitewerAdd DiffAdd
     highlight default link GitewerDelete DiffDelete
@@ -471,7 +507,13 @@ function! s:show_syntax() abort
 endfunction
 
 function! s:status_syntax() abort
-    syntax match GitewerFile /^\t\zs.*/
+    " https://git-scm.com/docs/git-status#_short_format
+    syntax match GitewerUntracked /^??/
+    syntax match GitewerIgnored /^!!/
+    for i in range(2, line('$')-1)
+        call matchaddpos('GitewerStaged', [[i,1]])
+        call matchaddpos('GitewerUnstaged', [[i,2]])
+    endfor
 endfunction
 
 function! s:blame_syntax() abort
