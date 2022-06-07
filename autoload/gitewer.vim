@@ -269,6 +269,7 @@ function! gitewer#blame(mod) abort
         return
     endif
 
+    let winID = win_getid()
     let blame_cmd = ['git', 'blame', expand('%')]
     let lnum = line('.')
     normal! gg
@@ -286,6 +287,7 @@ function! gitewer#blame(mod) abort
     setlocal nomodifiable
     nnoremap <buffer> <silent> <Enter> <Cmd>call <SID>show_preview(<SID>get_hash())<CR>
     call s:blame_syntax()
+    execute printf("autocmd Gitewer WinClosed <buffer> ++once call win_execute(%d, 'setlocal noscrollbind')", winID)
     wincmd p
     setlocal scrollbind
     setlocal nowrap
