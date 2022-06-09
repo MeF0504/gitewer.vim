@@ -210,6 +210,12 @@ function! gitewer#status(mod) abort
     endif
     let res = systemlist(status_cmd)
     let res[0] = substitute(res[0], '##', 'branch:', '')
+    let set_hi = 1
+    if len(res)==1
+        call add(res, '')
+        call add(res, 'no committed or modified files')
+        let set_hi = 0
+    endif
     if empty(a:mod)
         let mod = 'topleft'
     else
@@ -217,8 +223,10 @@ function! gitewer#status(mod) abort
     endif
     call <SID>buf_create(mod, '', 'status', res)
     setlocal nomodifiable
-    call s:status_syntax()
-    nnoremap <buffer> <silent> <Enter> <Cmd>call <SID>show_file_status()<CR>
+    if set_hi
+        call s:status_syntax()
+        nnoremap <buffer> <silent> <Enter> <Cmd>call <SID>show_file_status()<CR>
+    endif
 endfunction
 
 function! s:show_file_status() abort
@@ -227,6 +235,7 @@ function! s:show_file_status() abort
     endif
     let fname = getline('.')[3:]
     if !filereadable(fname)
+        echo printf('%s is not found.', fname)
         return
     endif
 
