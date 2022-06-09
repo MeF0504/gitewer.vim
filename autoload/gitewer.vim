@@ -204,7 +204,7 @@ function! gitewer#status(mod) abort
         return
     endif
 
-    let status_cmd = ['git', 'status', '-sb']   " short & branch
+    let status_cmd = ['git', 'status', '-sbuall']   " short & branch & show all untracked files
     if !has('nvim')
         let status_cmd = join(status_cmd, ' ')
     endif
@@ -511,6 +511,16 @@ function! s:status_syntax() abort
     syntax match GitewerUntracked /^??/
     syntax match GitewerIgnored /^!!/
     for i in range(2, line('$')-1)
+        let line = getline(i)
+        if empty(line)
+            continue
+        endif
+        if line[:1] == '!!'
+            continue
+        endif
+        if line[:1] == '??'
+            continue
+        endif
         call matchaddpos('GitewerStaged', [[i,1]])
         call matchaddpos('GitewerUnstaged', [[i,2]])
     endfor
