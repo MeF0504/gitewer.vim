@@ -476,7 +476,9 @@ function! s:log_graph_syntax() abort
             endif
         endfor
         for id in keys(pos)
-            call matchaddpos('GitewerCol'.id, pos[id])
+            if !empty(pos[id])
+                call matchaddpos('GitewerCol'.id, pos[id])
+            endif
         endfor
     endfor
 endfunction
