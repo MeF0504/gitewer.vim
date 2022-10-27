@@ -242,7 +242,13 @@ function! s:show_file_status() abort
     endif
 
     pclose
-    let diff_cmd = ['git', 'diff', fname]
+    if getline('.')[0] ==# 'M'
+        " staged
+        let diff_cmd = ['git', 'diff', '--cached', fname]
+    else
+        " not staged
+        let diff_cmd = ['git', 'diff', fname]
+    endif
     if !has('nvim')
         let diff_cmd = join(diff_cmd, ' ')
     endif
