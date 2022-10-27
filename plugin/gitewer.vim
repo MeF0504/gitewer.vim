@@ -17,14 +17,18 @@ function! s:get_files(arg) abort
     return split(glob(a:arg..'*'), '\n')
 endfunction
 
+let s:hashes = ''
 function! s:get_hashes(arg) abort
-    let hash_cmd = ['git', 'log', '--pretty=format:%h', '-'..get(g:, 'gitewer_hist_size', 100)]
-    if !has('nvim')
-        let hash_cmd = join(hash_cmd, ' ')
+    if empty(s:hashes)
+        let hash_cmd = ['git', 'log', '--pretty=format:%h', '-'..get(g:, 'gitewer_hist_size', 100)]
+        if !has('nvim')
+            let hash_cmd = join(hash_cmd, ' ')
+        endif
+        let hashes = systemlist(hash_cmd)
+        let hashes = ['HEAD', 'HEAD^', 'HEAD^^'] + hashes
+        let s:hashes = hashes
     endif
-    let hashes = systemlist(hash_cmd)
-    let hashes = ['HEAD', 'HEAD^', 'HEAD^^'] + hashes
-    return filter(hashes, '!stridx(v:val, a:arg)')
+    return filter(s:hashes, '!stridx(v:val, a:arg)')
 endfunction
 
 function! s:gitewer_comp(arglead, cmdline, cursorpos) abort
