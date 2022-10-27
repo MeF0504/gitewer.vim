@@ -16,13 +16,13 @@ function! s:is_git_repo() abort
     endif
 endfunction
 
-function! s:is_hash(hash) abort
-    if match(a:hash, '[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]\+') == 0
-        return v:true
-    else
-        return v:false
-    endif
-endfunction
+" function! s:is_hash(hash) abort
+"     if match(a:hash, '[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]\+') == 0
+"         return v:true
+"     else
+"         return v:false
+"     endif
+" endfunction
 
 function! s:show_help() abort
     echo 'usage; :Gitewer command [options]'
@@ -43,7 +43,7 @@ function! s:show_help() abort
 endfunction
 
 function! <SID>buf_create(mod, width, name, text_list) abort
-    if match(keys(s:bufs), a:name) == -1
+    if match(keys(s:bufs), printf('^%s$', a:name)) == -1
         let s:bufs[a:name] = 1
     else
         let s:bufs[a:name] += 1
@@ -168,6 +168,7 @@ function! gitewer#log(mod, ...) abort
     call <SID>buf_create(mod, '', 'log', res)
     call s:log_syntax()
     setlocal nomodifiable
+    let b:gitewer_log_opt = a:000
     nnoremap <buffer> <silent> <Enter> <Cmd>call <SID>show_preview(<SID>get_hash())<CR>
 endfunction
 
@@ -195,7 +196,8 @@ endfunction
 
 function! <SID>show_preview(hash) abort
     pclose
-    call gitewer#show('topleft', a:hash)
+    let opt = get(b:, 'gitewer_log_opt', [])
+    call call('gitewer#show', ['topleft', a:hash]+opt)
     setlocal previewwindow
 endfunction
 
