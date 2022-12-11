@@ -517,12 +517,13 @@ function! s:log_syntax() abort
 endfunction
 
 function! s:show_syntax() abort
-    syntax match GitewerCommit /^commit [0-9a-f]*/
-    syntax match GitewerAuthor /^Author: .*/
-    syntax match GitewerDate   /^Date: .*/
-    syntax match GitewerAdd    /^+.*/
-    syntax match GitewerDelete /^-.*/
-    syntax match GitewerFile   /^@@ .*/
+    set filetype=git
+    " syntax match GitewerCommit /^commit [0-9a-f]*/
+    " syntax match GitewerAuthor /^Author: .*/
+    " syntax match GitewerDate   /^Date: .*/
+    " syntax match GitewerAdd    /^+.*/
+    " syntax match GitewerDelete /^-.*/
+    " syntax match GitewerFile   /^@@ .*/
 endfunction
 
 function! s:status_syntax() abort
@@ -552,8 +553,9 @@ function! s:blame_syntax() abort
 endfunction
 
 function! s:stash_syntax() abort
-    syntax match GitewerAdd    /^+.*/
-    syntax match GitewerDelete /^-.*/
-    syntax match GitewerFile   /^@@ .*/
+    set filetype=git
+    " syntax match GitewerAdd    /^+.*/
+    " syntax match GitewerDelete /^-.*/
+    " syntax match GitewerFile   /^@@ .*/
 endfunction
 
