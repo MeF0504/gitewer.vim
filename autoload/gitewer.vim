@@ -42,6 +42,7 @@ function! s:show_help() abort
     echo"\t show the changes recorded in the stash as a diff"
 endfunction
 
+let s:load_git_syntax = 0
 function! <SID>buf_create(mod, width, name, text_list) abort
     if match(keys(s:bufs), printf('^%s$', a:name)) == -1
         let s:bufs[a:name] = 1
@@ -70,6 +71,10 @@ function! <SID>buf_create(mod, width, name, text_list) abort
 
     call append(0, a:text_list)
     normal! gg
+    if !s:load_git_syntax
+        runtime! syntax/git.vim
+        let s:load_git_syntax = 1
+    endif
 endfunction
 
 function! <SID>get_hash() abort
@@ -387,36 +392,33 @@ endfunction
 
 function! s:gitewer_highlight() abort
     if &background == 'dark'
-        highlight default GitewerAuthor guifg=Cyan ctermfg=14
-        highlight default GitewerDate guifg=Yellow ctermfg=11
         highlight default GitewerCol1 guifg=Red ctermfg=9
         highlight default GitewerCol2 guifg=Green ctermfg=10
         highlight default GitewerCol3 guifg=Magenta ctermfg=13
         highlight default GitewerCol4 guifg=Silver ctermfg=7
         highlight default GitewerCol5 guifg=Gold ctermfg=220
         highlight default GitewerCommit guifg=Silver ctermfg=7
-        highlight default GitewerFile guifg=Green ctermfg=2
         highlight default GitewerUntracked guifg=Silver ctermfg=7
         highlight default GitewerIgnored guifg=Grey30 ctermfg=239
         highlight default GitewerUnstaged guifg=Red ctermfg=9
         highlight default GitewerStaged guifg=Lime ctermfg=10
     else
-        highlight default GitewerAuthor guifg=Blue ctermfg=4
-        highlight default GitewerDate ctermfg=135 guifg=#af8700
         highlight default GitewerCol1 guifg=Red ctermfg=9
         highlight default GitewerCol2 guifg=Green ctermfg=10
         highlight default GitewerCol3 guifg=Magenta ctermfg=13
         highlight default GitewerCol4 guifg=Silver ctermfg=7
         highlight default GitewerCol5 guifg=Gold ctermfg=220
         highlight default GitewerCommit ctermfg=243 guifg=#767676
-        highlight default GitewerFile guifg=Green ctermfg=2
         highlight default GitewerUntracked guifg=Silver ctermfg=7
         highlight default GitewerIgnored guifg=Grey70 ctermfg=249
         highlight default GitewerUnstaged guifg=Red ctermfg=9
         highlight default GitewerStaged guifg=Green ctermfg=10
     endif
-    highlight default link GitewerAdd DiffAdd
-    highlight default link GitewerDelete DiffDelete
+    highlight default link GitewerAuthor gitIdentity
+    highlight default link GitewerDate gitDate
+    highlight default link GitewerFile diffFile
+    " highlight default link GitewerAdd diffAdded
+    " highlight default link GitewerDelete diffRemoved
 endfunction
 
 call s:gitewer_highlight()
