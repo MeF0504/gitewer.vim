@@ -408,7 +408,7 @@ function! s:gitewer_highlight() abort
         highlight default GitewerCol3 guifg=Magenta ctermfg=13
         highlight default GitewerCol4 guifg=Silver ctermfg=7
         highlight default GitewerCol5 guifg=Gold ctermfg=220
-        highlight default GitewerCommit ctermfg=243 guifg=#767676
+        highlight default GitewerCommit guifg=#767676 ctermfg=243
         highlight default GitewerUntracked guifg=Silver ctermfg=7
         highlight default GitewerIgnored guifg=Grey70 ctermfg=249
         highlight default GitewerUnstaged guifg=Red ctermfg=9
@@ -417,6 +417,7 @@ function! s:gitewer_highlight() abort
     highlight default link GitewerAuthor gitIdentity
     highlight default link GitewerDate gitDate
     highlight default link GitewerFile diffFile
+    highlight default link GitewerBranch Title
     " highlight default link GitewerAdd diffAdded
     " highlight default link GitewerDelete diffRemoved
 endfunction
@@ -530,6 +531,7 @@ endfunction
 
 function! s:status_syntax() abort
     " https://git-scm.com/docs/git-status#_short_format
+    call matchaddpos('GitewerBranch', [1])
     syntax match GitewerUntracked /^??/
     syntax match GitewerIgnored /^!!/
     for i in range(2, line('$')-1)
