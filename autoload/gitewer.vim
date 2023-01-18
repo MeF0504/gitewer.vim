@@ -92,7 +92,7 @@ function! gitewer#gitewer(mod, ...) abort
     if a:1 == 'help'
         call s:show_help()
     elseif a:1 == 'status'
-        call call('gitewer#status', [a:mod])
+        call call('gitewer#status', [a:mod]+a:000[1:])
     elseif a:1 == 'log'
         call call('gitewer#log', [a:mod]+a:000[1:])
     elseif a:1 == 'show'
@@ -206,22 +206,23 @@ function! <SID>show_preview(hash) abort
     setlocal previewwindow
 endfunction
 
-function! gitewer#status(mod) abort
+function! gitewer#status(mod, ...) abort
     if !s:is_git_repo()
         return
     endif
 
     let status_cmd = ['git', 'status', '-sbuall']   " short & branch & show all untracked files
+    let status_cmd += a:000
     if !has('nvim')
         let status_cmd = join(status_cmd, ' ')
     endif
     let res = systemlist(status_cmd)
     let res[0] = substitute(res[0], '##', 'branch:', '')
-    let set_hi = 1
+    let no_files = 0
     if len(res)==1
         call add(res, '')
         call add(res, 'no committed or modified files')
-        let set_hi = 0
+        let no_files = 1
     endif
     if empty(a:mod)
         let mod = 'topleft'
@@ -230,8 +231,8 @@ function! gitewer#status(mod) abort
     endif
     call <SID>buf_create(mod, '', 'status', res)
     setlocal nomodifiable
-    if set_hi
-        call s:status_syntax()
+    call s:status_syntax(!no_files)
+    if !no_files
         nnoremap <buffer> <silent> <Enter> <Cmd>call <SID>show_file_status()<CR>
     endif
 endfunction
@@ -529,9 +530,12 @@ function! s:show_syntax() abort
     " syntax match GitewerFile   /^@@ .*/
 endfunction
 
-function! s:status_syntax() abort
+function! s:status_syntax(all) abort
     " https://git-scm.com/docs/git-status#_short_format
     call matchaddpos('GitewerBranch', [1])
+    if !a:all
+        return
+    endif
     syntax match GitewerUntracked /^??/
     syntax match GitewerIgnored /^!!/
     for i in range(2, line('$')-1)

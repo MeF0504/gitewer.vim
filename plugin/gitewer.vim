@@ -43,11 +43,13 @@ function! s:gitewer_comp(arglead, cmdline, cursorpos) abort
         let cur_opt = cmdlines[gi_idx+1]
         if cur_opt == 'help'
             return []
-        elseif cur_opt == 'log'
+        elseif cur_opt ==# 'status'
             return s:get_files(a:arglead)
-        elseif cur_opt == 'show'
+        elseif cur_opt ==# 'log'
+            return s:get_files(a:arglead)
+        elseif cur_opt ==# 'show'
             return s:get_files(a:arglead)+filter(s:get_hashes(a:arglead), 'match(a:cmdline, v:val)==-1')
-        elseif cur_opt == 'diff'
+        elseif cur_opt ==# 'diff'
             if len(cmdlines) == gi_idx+3
                 return s:get_files(a:arglead)+filter(s:get_hashes(a:arglead), 'match(a:cmdline, v:val)==-1')
             elseif len(cmdlines) == gi_idx+4
@@ -57,10 +59,11 @@ function! s:gitewer_comp(arglead, cmdline, cursorpos) abort
             else
                 return []
             endif
-        elseif cur_opt == 'blame'
+        elseif cur_opt ==# 'blame'
             return []
         endif
     endif
+    return []
 endfunction
 
 command! -nargs=+ -complete=customlist,s:gitewer_comp Gitewer call gitewer#gitewer(<q-mods>, <f-args>)
