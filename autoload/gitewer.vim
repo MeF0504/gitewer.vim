@@ -313,7 +313,8 @@ function! gitewer#blame(mod) abort
     if !s:is_git_repo()
         return
     endif
-    if !filereadable(expand('%'))
+    let fname = expand('%')
+    if !filereadable(fname)
         echohl WarningMsg
         echo 'please open a file.'
         echohl None
@@ -321,7 +322,7 @@ function! gitewer#blame(mod) abort
     endif
 
     let winID = win_getid()
-    let blame_cmd = ['git', 'blame', expand('%')]
+    let blame_cmd = ['git', 'blame', fname]
     let lnum = line('.')
     normal! gg
     if !has('nvim')
@@ -336,6 +337,7 @@ function! gitewer#blame(mod) abort
     setlocal winfixwidth
     setlocal nonumber
     setlocal nomodifiable
+    let b:gitewer_log_opt = [fname]
     nnoremap <buffer> <silent> <Enter> <Cmd>call <SID>show_preview(<SID>get_hash())<CR>
     call s:blame_syntax()
     execute printf("autocmd Gitewer WinClosed <buffer> ++once call win_execute(%d, 'setlocal noscrollbind')", winID)
