@@ -80,8 +80,12 @@ endfunction
 function! <SID>get_hash() abort
     let line = getline('.')
     let idx = match(line, '[0-9a-f]')
-    let hash = line[idx:idx+6]
-    return hash
+    if idx == -1
+        return ''
+    else
+        let hash = line[idx:idx+6]
+        return hash
+    endif
 endfunction
 
 function! gitewer#gitewer(mod, ...) abort
@@ -200,6 +204,9 @@ function! gitewer#show(mod, ...) abort
 endfunction
 
 function! <SID>show_preview(hash) abort
+    if empty(a:hash)
+        return
+    endif
     pclose
     let opt = get(b:, 'gitewer_log_opt', [])
     call call('gitewer#show', ['topleft', a:hash]+opt)
