@@ -35,7 +35,7 @@ endfunction
 function! s:gitewer_comp(arglead, cmdline, cursorpos) abort
     let arglead = tolower(a:arglead)
     let cmdline = tolower(a:cmdline)
-    let opts = split('help log show status diff blame stash', ' ')
+    let opts = split('help log show status diff blame stash grep', ' ')
     let cmdlines = split(cmdline, ' ', 1)
     let gi_idx = match(cmdlines, 'G.*')
     if len(cmdlines) <= gi_idx+2
@@ -62,6 +62,13 @@ function! s:gitewer_comp(arglead, cmdline, cursorpos) abort
             endif
         elseif cur_opt ==# 'blame'
             return []
+        elseif cur_opt ==# 'grep'
+            let special_opts = ['--all_branches', '--all_commits']
+            if len(cmdlines) == gi_idx+3
+                if a:arglead[:1] == '--'
+                    return filter(special_opts, 'match(a:cmdline, v:val)==-1')
+                endif
+            endif
         endif
     endif
     return []

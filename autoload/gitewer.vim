@@ -39,7 +39,10 @@ function! s:show_help() abort
     echo '  blame'
     echo "\t show what revision and author last modified each line of a current file"
     echo '  stash'
-    echo"\t show the changes recorded in the stash as a diff"
+    echo "\t show the changes recorded in the stash as a diff"
+    echo '  grep [opt [opt2 ...]] <word>'
+    echo "\t execute git grep and show the results in the quickfix window."
+    echo "\t there are 2 special opts; '--all_branches' and '--all_commits'."
 endfunction
 
 let s:load_git_syntax = 0
@@ -147,6 +150,8 @@ function! gitewer#gitewer(mod, ...) abort
         call gitewer#blame(a:mod)
     elseif a:1 == 'stash'
         call gitewer#stash(a:mod)
+    elseif a:1 == 'grep'
+        call call("gitewer#grep", a:000[1:])
     else
         " if get(g:, 'gitewer_anyargs', 0)
         "     call gitewer#any(a:mod)
@@ -398,6 +403,53 @@ function! gitewer#stash(mod) abort
     call <SID>buf_create(mod, '', 'stash', res)
     call s:stash_syntax()
     setlocal nomodifiable
+endfunction
+
+function! gitewer#grep(...) abort
+    if empty(a:000)
+        echohl ErrorMsg
+        echo "search word is required"
+        echohl None
+        return
+    endif
+    if a:1 ==# '--all_branches'
+        let word = a:2
+        if !has('nvim')
+            let bra_cmd = 'git branch -a --format="%(objectname) %(refname:short)"'
+        else
+            let bra_cmd = ['git', 'branch', '-a', '--format=%(objectname) %(refname:short)']
+        endif
+        let opt = systemlist(bra_cmd)
+        let opt = map(uniq(sort(opt)), 'v:val[41:]')
+        let grep_cmd = ['git', 'grep', '-n', word]+opt
+    elseif a:1 ==# '--all_commits'
+        let word = a:2
+        let hash_cmd = ['git', 'rev-list', '--all', '--max-count='..get(g:, 'gitewer_hist_size', 100)]
+        if !has('nvim')
+            let hash_cmd = join(hash_cmd, ' ')
+        endif
+        let opt = systemlist(hash_cmd)
+        let opt = map(opt, 'v:val[:5]')
+        let grep_cmd = ['git', 'grep', '-n', word]+opt
+    else
+        let grep_cmd = ['git', 'grep', '-n']+a:000
+    endif
+
+    if !has('nvim')
+        let grep_cmd = join(grep_cmd, ' ')
+    endif
+
+    " echo grep_cmd
+    let grep_list = systemlist(grep_cmd)
+    if empty(grep_list)
+        echohl WarningMsg
+        echo 'no hits'
+        echohl None
+        return
+    else
+        cgetexpr grep_list
+        cwindow
+    endif
 endfunction
 
 function! s:gitewer_highlight() abort
