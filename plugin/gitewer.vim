@@ -20,11 +20,12 @@ endfunction
 let s:hashes = ''
 function! s:get_hashes(arg) abort
     if empty(s:hashes)
-        let hash_cmd = ['git', 'log', '--pretty=format:%h', '-'..get(g:, 'gitewer_hist_size', 100)]
+        let hash_cmd = ['git', 'rev-list', '--all', '--max-count='..get(g:, 'gitewer_hist_size', 100)]
         if !has('nvim')
             let hash_cmd = join(hash_cmd, ' ')
         endif
         let hashes = systemlist(hash_cmd)
+        let hashes = map(hashes, 'v:val[:5]')
         let hashes = ['HEAD', 'HEAD^', 'HEAD^^'] + hashes
         let s:hashes = hashes
     endif
