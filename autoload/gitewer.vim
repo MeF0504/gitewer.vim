@@ -16,6 +16,15 @@ function! s:is_git_repo() abort
     endif
 endfunction
 
+function! s:is_already_opened(name) abort
+    for wnr in range(1, winnr('$'))
+        if bufname(winbufnr(wnr)) =~# printf('gitewer:%s', a:name)
+            return v:true
+        endif
+    endfor
+    return v:false
+endfunction
+
 " function! s:is_hash(hash) abort
 "     if match(a:hash, '[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]\+') == 0
 "         return v:true
@@ -156,6 +165,9 @@ function! gitewer#gitewer(mod, ...) abort
         " if get(g:, 'gitewer_anyargs', 0)
         "     call gitewer#any(a:mod)
         " endif
+        echohl WarningMsg
+        echo "incorrect subcommand."
+        echohl None
     endif
 endfunction
 
@@ -292,6 +304,13 @@ function! gitewer#diff(file, hash1, hash2) abort
         echohl None
         return
     endif
+    let buf_name = printf('diff:%s-%s', a:file, a:hash1)
+    if s:is_already_opened(buf_name)
+        echohl WarningMsg
+        echo 'already opened'
+        echohl None
+        return
+    endif
 
     if !empty(a:hash1)
         let diff_cmd = ['git', 'show', printf('%s:%s', a:hash1, a:file)]
@@ -299,7 +318,7 @@ function! gitewer#diff(file, hash1, hash2) abort
             let diff_cmd = join(diff_cmd, ' ')
         endif
         let res = systemlist(diff_cmd)
-        call <SID>buf_create('tab', '', printf('diff:%s-%s', a:file, a:hash1), res)
+        call <SID>buf_create('tab', '', buf_name, res)
         $delete _
         setlocal nomodifiable
     elseif a:file != expand('%')
@@ -332,6 +351,13 @@ function! gitewer#blame(mod) abort
         echohl None
         return
     endif
+    let buf_name = 'blame'
+    if s:is_already_opened(buf_name)
+        echohl WarningMsg
+        echo 'already opened'
+        echohl None
+        return
+    endif
 
     let winID = win_getid()
     let pre_opt = 'setlocal noscrollbind'
@@ -346,7 +372,7 @@ function! gitewer#blame(mod) abort
     endif
     let res = systemlist(blame_cmd)
     let res = map(res, "v:val[:stridx(v:val, ')')]")
-    call <SID>buf_create('topleft vertical', 35, 'blame', res)
+    call <SID>buf_create('topleft vertical', 35, buf_name, res)
     $delete _
     normal! gg
     setlocal scrollbind
