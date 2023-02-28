@@ -364,6 +364,7 @@ function! gitewer#blame(mod) abort
     if &wrap
         let pre_opt .= ' | setlocal wrap'
     endif
+    let pre_opt .= ' | setlocal nocursorbind'
     let blame_cmd = ['git', 'blame', fname]
     let lnum = line('.')
     normal! gg
@@ -376,6 +377,7 @@ function! gitewer#blame(mod) abort
     $delete _
     normal! gg
     setlocal scrollbind
+    setlocal cursorbind
     setlocal winfixwidth
     setlocal nonumber
     setlocal nomodifiable
@@ -385,6 +387,7 @@ function! gitewer#blame(mod) abort
     execute printf("autocmd Gitewer WinClosed <buffer> ++once call win_execute(%d, '%s')", winID, pre_opt)
     wincmd p
     setlocal scrollbind
+    setlocal cursorbind
     setlocal nowrap
     execute lnum
 endfunction
