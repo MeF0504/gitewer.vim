@@ -590,6 +590,10 @@ function! s:log_graph_syntax() abort
 endfunction
 
 function! s:log_syntax() abort
+    if getline(1)[0] !=# '*'
+        " failed to get the log.
+        return
+    endif
     " syntax match GitewerOpts "^|[ |\\/]* " contains=
     "             \ GitewerAuthor, GitewerDate,
     "             \ GitewerCol1, GitewerCol2, GitewerCol3
