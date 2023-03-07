@@ -407,11 +407,15 @@ function! gitewer#stash(mod) abort
         return
     endif
 
+    let in_str = ""
     for i in range(len(res))
-        echo (i+1).': '
-        echon res[i][stridx(res[i], ':')+2:]
+        let in_str .= printf('%d: ', i+1)
+        let in_str .= res[i][stridx(res[i], ':')+2:]
+        let in_str .= "\n"
     endfor
-    let stash = input('select stash (empty cancel); ')
+    let in_str .= repeat("\n", &cmdheight-len(res))
+    let in_str .= "select stash (empty cancel); "
+    let stash = input(in_str)
     if empty(stash)
         return
     endif
