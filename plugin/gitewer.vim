@@ -75,4 +75,5 @@ function! s:gitewer_comp(arglead, cmdline, cursorpos) abort
 endfunction
 
 command! -nargs=+ -complete=customlist,s:gitewer_comp Gitewer call gitewer#gitewer(<q-mods>, <f-args>)
+command! -nargs=+ -complete=customlist,s:gitewer_comp GitViewer call gitewer#gitewer(<q-mods>, <f-args>)
 
