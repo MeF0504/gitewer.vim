@@ -100,6 +100,10 @@ function! <SID>get_hash() abort
     endif
 endfunction
 
+function! s:expand_args(arg_list) abort
+    return map(a:arg_list, 'expand(v:val)')
+endfunction
+
 function! gitewer#gitewer(mod, ...) abort
     if !s:is_git_repo()
         return
@@ -108,11 +112,11 @@ function! gitewer#gitewer(mod, ...) abort
     if a:1 == 'help'
         call s:show_help()
     elseif a:1 == 'status'
-        call call('gitewer#status', [a:mod]+a:000[1:])
+        call call('gitewer#status', [a:mod]+s:expand_args(a:000[1:]))
     elseif a:1 == 'log'
-        call call('gitewer#log', [a:mod]+a:000[1:])
+        call call('gitewer#log', [a:mod]+s:expand_args(a:000[1:]))
     elseif a:1 == 'show'
-        call call('gitewer#show', [a:mod]+a:000[1:])
+        call call('gitewer#show', [a:mod]+s:expand_args(a:000[1:]))
     elseif a:1 == 'diff'
         if a:0 == 1
             " no suboption
