@@ -91,7 +91,7 @@ endfunction
 
 function! <SID>get_hash() abort
     let line = getline('.')
-    let idx = match(line, '[0-9a-f]')
+    let idx = match(line, '[0-9a-f]\{6}')
     if idx == -1
         return ''
     else
@@ -165,6 +165,8 @@ function! gitewer#gitewer(mod, ...) abort
         call gitewer#stash(a:mod)
     elseif a:1 == 'grep'
         call call("gitewer#grep", a:000[1:])
+    elseif a:1 == 'log-file'
+        call gitewer#log_file(a:mod)
     else
         " if get(g:, 'gitewer_anyargs', 0)
         "     call gitewer#any(a:mod)
@@ -201,6 +203,30 @@ function! gitewer#log(mod, ...) abort
     let b:gitewer_log_opt = a:000
     nnoremap <buffer> <silent> <Enter> <Cmd>call <SID>show_preview(<SID>get_hash())<CR>
 endfunction
+
+function gitewer#log_file(mod) abort
+    if !s:is_git_repo()
+        return
+    endif
+
+    let size = get(g:, 'gitewer_hist_size', 100)
+        let log_cmd = ['git', 'log', '--name-only', '--oneline', '-'..size]
+    if !has('nvim')
+        let log_cmd = join(log_cmd, ' ')
+    endif
+    let res = systemlist(log_cmd)
+    if empty(a:mod)
+        let mod = 'tab'
+    else
+        let mod = a:mod
+    endif
+    call <SID>buf_create(mod, '', 'log-name', res)
+    call s:logfile_syntax()
+    setlocal nomodifiable
+    let b:gitewer_log_opt = []
+    nnoremap <buffer> <silent> <Enter> <Cmd>call <SID>show_preview(<SID>get_hash())<CR>
+endfunction
+
 
 function! gitewer#show(mod, ...) abort
     if !s:is_git_repo()
@@ -505,6 +531,7 @@ function! s:gitewer_highlight() abort
         highlight default GitewerIgnored guifg=Grey30 ctermfg=239
         highlight default GitewerUnstaged guifg=Red ctermfg=9
         highlight default GitewerStaged guifg=Lime ctermfg=10
+        highlight default GitewerHash guifg=Yellow ctermfg=11
     else
         highlight default GitewerCol1 guifg=Red ctermfg=9
         highlight default GitewerCol2 guifg=Green ctermfg=10
@@ -516,6 +543,7 @@ function! s:gitewer_highlight() abort
         highlight default GitewerIgnored guifg=Grey70 ctermfg=249
         highlight default GitewerUnstaged guifg=Red ctermfg=9
         highlight default GitewerStaged guifg=Green ctermfg=10
+        highlight default GitewerHash guifg=DarkYellow ctermfg=3
     endif
     highlight default link GitewerAuthor gitIdentity
     highlight default link GitewerDate gitDate
@@ -624,6 +652,10 @@ function! s:log_syntax() abort
     syntax region GitewerDate start=/[12][0-9][0-9][0-9]-/ end=/\([+-][01][0-9]:[0-9][0-9]\|Z\)\ze; / contained
     syntax region GitewerCommit start=/) \zs(/ end=/)\ze:/ contained
     " syntax match GitewerHash /^.* \zs[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]\ze/
+endfunction
+
+function! s:logfile_syntax() abort
+    syntax match GitewerHash /^\zs[0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f][0-9a-f]\ze/
 endfunction
 
 function! s:show_syntax() abort
