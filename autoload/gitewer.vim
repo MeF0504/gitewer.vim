@@ -106,10 +106,25 @@ function! s:expand_args(arg_list) abort
     return map(a:arg_list, 'expand(v:val)')
 endfunction
 
+function! s:set_period() abort
+    let period_opt = get(g:, 'gitewer_set_period', 100)
+    if period_opt ==# 'all'
+        let s:period = []
+    elseif type(period_opt) == type(0)
+        let s:period = ['-n', period_opt]
+    elseif type(period_opt) == type('')
+        let s:period = ['--since', period_opt]
+    else
+        let s:period = ['-n', '100']
+    endif
+endfunction
+
 function! gitewer#gitewer(mod, ...) abort
     if !s:is_git_repo()
         return
     endif
+
+    call s:set_period()
 
     if a:1 == 'help'
         call s:show_help()
@@ -184,12 +199,11 @@ function! gitewer#log(mod, ...) abort
         return
     endif
 
-    let size = get(g:, 'gitewer_hist_size', 100)
     if has('nvim')
-        let log_cmd = ['git', 'log', '--graph', '--pretty=format:%h %aI; (%an)%d:| %s', '-'..size]
+        let log_cmd = ['git', 'log', '--graph', '--pretty=format:%h %aI; (%an)%d:| %s'] + s:period
         let log_cmd += a:000
     else
-        let log_cmd = ['git', 'log', '--graph', '--pretty="format:%h %aI; (%an)%d:| %s"', '-'..size]
+        let log_cmd = ['git', 'log', '--graph', '--pretty="format:%h %aI; (%an)%d:| %s"'] + s:period
         let log_cmd += a:000
         let log_cmd = join(log_cmd, ' ')
     endif
@@ -211,8 +225,7 @@ function gitewer#log_file(mod) abort
         return
     endif
 
-    let size = get(g:, 'gitewer_hist_size', 100)
-        let log_cmd = ['git', 'log', '--name-only', '--oneline', '-'..size]
+        let log_cmd = ['git', 'log', '--name-only', '--oneline'] + s:period
     if !has('nvim')
         let log_cmd = join(log_cmd, ' ')
     endif
@@ -493,7 +506,7 @@ function! gitewer#grep(...) abort
         let grep_cmd = ['git', 'grep', '-n', word]+opt
     elseif a:1 ==# '--all_commits'
         let word = a:2
-        let hash_cmd = ['git', 'rev-list', '--all', '--max-count='..get(g:, 'gitewer_hist_size', 100)]
+        let hash_cmd = ['git', 'rev-list', '--all', '--max-count=50']
         if !has('nvim')
             let hash_cmd = join(hash_cmd, ' ')
         endif

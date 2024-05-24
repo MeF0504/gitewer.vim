@@ -46,17 +46,22 @@ commands and available options:
 
 ## Options
 
-- `g:gitewer_hist_size` : specify the size of log history showing in this plugin. default:100.
+- `g:gitewer_set_period` : specify the log period shown in this plugin.
+If the type of this variable is number, `-n <num>` option is used in the git command.
+If that is a string, `--since ` is used.
+If 'all' is set, do not limit the log period.
+default:100.
 - highlight color
-    - `GitewerAuthor`   : highlight color mainly for author line.
-    - `GitewerDate`     : highlight color mainly for date line.
-    - `GitewerCol1`     : highlight color for first column of git log page. `GitewerCol2`, `GitewerCol3` are also available.
-    - `GitewerCommit`   : highlight color mainly for commit logs.
-    - `GitewerFile`     : highlight color mainly for file line.
-    - `GitewerAdd`      : highlight color for added lines.
-    - `GitewerDelete`   : highlight color for deleted lines.
-    - `GitewerUntracked`: highlight color for a untracked mark.
-    - `GitewerIgnored`  : highlight color for a ignored mark.
-    - `GitewerUnstaged` : highlight color for a character of "unstaged" column of short status.
-    - `GitewerStaged`   : highlight color for a character of "staged" column of short status.
+    - `GitewerAuthor`    : highlight color mainly for author line.
+    - `GitewerDate`      : highlight color mainly for date line.
+    - `GitewerCol1`      : highlight color for first column of git log page. `GitewerCol2`, `GitewerCol3` are also available.
+    - `GitewerCommit`    : highlight color mainly for commit logs.
+    - `GitewerFile`      : highlight color mainly for file line.
+    - `GitewerAdd`       : highlight color for added lines.
+    - `GitewerDelete`    : highlight color for deleted lines.
+    - `GitewerUntracked` : highlight color for a untracked mark.
+    - `GitewerIgnored`   : highlight color for a ignored mark.
+    - `GitewerUnstaged`  : highlight color for a character of "unstaged" column of short status.
+    - `GitewerStaged`    : highlight color for a character of "staged" column of short status.
+    - `GitewerHash`      : highlight color for hash number in `log-file` command.
 
