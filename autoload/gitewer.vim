@@ -52,6 +52,8 @@ function! s:show_help() abort
     echo '  grep [opt [opt2 ...]] <word>'
     echo "\t execute git grep and show the results in the quickfix window."
     echo "\t there are 2 special opts; '--all_branches' and '--all_commits'."
+    echo '  log-file'
+    echo "\t show file names edited in each commit."
 endfunction
 
 let s:load_git_syntax = 0

@@ -36,6 +36,13 @@ commands and available options:
     - show changes between the file in current status and that in hash1, or the file in hash1 and that in hash2. default: file=current file, hash1=HEAD, hash2=nothing
 - blame
     - show what revision and author last modified each line of a current file
+- stash
+    - show the changes recorded in the stash as a diff
+- grep [opt [opt2 ...]] <word>
+    - execute git grep and show the results in the quickfix window.
+      there are 2 special opts; '--all_branches' and '--all_commits'.
+- log-file
+    - show file names edited in each commit.
 
 ## Options
 
