@@ -218,6 +218,7 @@ function! gitewer#log(mod, ...) abort
     setlocal nomodifiable
     let b:gitewer_log_opt = a:000
     nnoremap <buffer> <silent> <Enter> <Cmd>call <SID>show_preview(<SID>get_hash())<CR>
+    nnoremap <buffer> <silent> d <Cmd>call <SID>show_diff(<SID>get_hash())<CR>
 endfunction
 
 function gitewer#log_file(mod) abort
@@ -240,6 +241,7 @@ function gitewer#log_file(mod) abort
     setlocal nomodifiable
     let b:gitewer_log_opt = []
     nnoremap <buffer> <silent> <Enter> <Cmd>call <SID>show_preview(<SID>get_hash())<CR>
+    nnoremap <buffer> <silent> d <Cmd>call <SID>show_diff(<SID>get_hash())<CR>
 endfunction
 
 
@@ -273,6 +275,22 @@ function! <SID>show_preview(hash) abort
     let opt = get(b:, 'gitewer_log_opt', [])
     call call('gitewer#show', ['topleft', a:hash]+opt)
     setlocal previewwindow
+endfunction
+
+function! <SID>show_diff(hash) abort
+    if empty(a:hash)
+        return
+    endif
+
+    let opt = get(b:, 'gitewer_log_opt', [])
+    let cmd = ['git', 'diff', 'HEAD', a:hash] + opt
+    if !has('nvim')
+        let cmd = join(cmd, ' ')
+    endif
+    let res = systemlist(cmd)
+    call s:buf_create('topleft', '', 'diff-show', res)
+    call s:show_syntax()
+    setlocal nomodifiable
 endfunction
 
 function! gitewer#status(mod, ...) abort
@@ -428,6 +446,7 @@ function! gitewer#blame(mod) abort
     setlocal nomodifiable
     let b:gitewer_log_opt = [fname]
     nnoremap <buffer> <silent> <Enter> <Cmd>call <SID>show_preview(<SID>get_hash())<CR>
+    nnoremap <buffer> <silent> d <Cmd>call <SID>show_diff(<SID>get_hash())<CR>
     call s:blame_syntax()
     execute printf("autocmd Gitewer WinClosed <buffer> ++once call win_execute(%d, '%s')", winID, pre_opt)
     wincmd p
