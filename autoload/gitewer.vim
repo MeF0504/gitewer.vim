@@ -154,7 +154,7 @@ function! gitewer#gitewer(mod, ...) abort
             endif
         elseif a:0 == 3
             if filereadable(a:2)
-                " fike & hash
+                " file & hash
                 let file = a:2
                 let hash1 = ''
                 let hash2 = a:3
@@ -363,7 +363,7 @@ function! gitewer#diff(file, hash1, hash2) abort
     endif
     if !filereadable(a:file)
         echohl WarningMsg
-        echo 'please open a file.'
+        echo 'File is not reabable, '..a:file
         echohl None
         return
     endif
@@ -375,8 +375,18 @@ function! gitewer#diff(file, hash1, hash2) abort
         return
     endif
 
+    let git_dir = finddir('.git', ';')
+    if empty(git_dir)
+        echohl WarningMsg
+        echo 'git directory is not found'
+        echohl None
+        return
+    endif
+    let top_dir = fnamemodify(git_dir, ':p:h:h')..'/'
+    " relative path
+    let file = substitute(fnamemodify(a:file, ':p'), top_dir, '', '')
     if !empty(a:hash1)
-        let diff_cmd = ['git', 'show', printf('%s:%s', a:hash1, a:file)]
+        let diff_cmd = ['git', 'show', printf('%s:%s', a:hash1, file)]
         if !has('nvim')
             let diff_cmd = join(diff_cmd, ' ')
         endif
@@ -389,7 +399,7 @@ function! gitewer#diff(file, hash1, hash2) abort
     endif
     let ft = &filetype
 
-    let diff_cmd = ['git', 'show', printf('%s:%s', a:hash2, a:file)]
+    let diff_cmd = ['git', 'show', printf('%s:%s', a:hash2, file)]
     if !has('nvim')
         let diff_cmd = join(diff_cmd, ' ')
     endif
