@@ -32,6 +32,8 @@ commands and available options:
     - show working-tree status
 - show [file/dir/hash]
     - show various types of objects
+- view branch file
+    - show the file at the specified branch
 - diff [file] [hash1] [hash2]
     - show changes between the file in current status and that in hash1, or the file in hash1 and that in hash2. default: file=current file, hash1=HEAD, hash2=nothing
 - blame
