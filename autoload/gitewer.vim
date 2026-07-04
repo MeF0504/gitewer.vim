@@ -43,6 +43,8 @@ function! s:show_help() abort
     echo "\t show working-tree status"
     echo '  show [file/dir/hash [file/dir/hash ...]]'
     echo "\t show various types of objects"
+    echo '  view branch file'
+    echo "\t show the file at the specified branch"
     echo '  diff [file] [hash1] [hash2]'
     echo "\t show changes between the file in current status and that in hash1, or the file in hash1 and that in hash2. default: file=current file, hash1=HEAD, hash2=nothing"
     echo '  blame'
@@ -57,7 +59,7 @@ function! s:show_help() abort
 endfunction
 
 let s:load_git_syntax = 0
-function! <SID>buf_create(mod, width, name, text_list) abort
+function! <SID>buf_create(mod, width, name, text_list, defname=v:true) abort
     if match(keys(s:bufs), printf('^%s$', a:name)) == -1
         let s:bufs[a:name] = 1
     else
@@ -66,7 +68,11 @@ function! <SID>buf_create(mod, width, name, text_list) abort
             let s:bufs[a:name] = 1
         endif
     endif
-    let name = printf('gitewer:%s-%d', a:name, s:bufs[a:name])
+    if a:defname
+        let name = printf('gitewer:%s-%d', a:name, s:bufs[a:name])
+    else
+        let name = a:name
+    endif
     execute printf('%s %snew %s', a:mod, a:width, name)
 
     setlocal modifiable
@@ -134,6 +140,12 @@ function! gitewer#gitewer(mod, ...) abort
         call call('gitewer#log', [a:mod]+s:expand_args(a:000[1:]))
     elseif a:1 == 'show'
         call call('gitewer#show', [a:mod]+s:expand_args(a:000[1:]))
+    elseif a:1 == 'view'
+        if a:0 == 3
+            call call('gitewer#view', [a:mod]+s:expand_args(a:000[1:]))
+        else
+            echo "usage; :Gitewer view BRANCH FILE"
+        endif
     elseif a:1 == 'diff'
         if a:0 == 1
             " no suboption
@@ -154,7 +166,7 @@ function! gitewer#gitewer(mod, ...) abort
             endif
         elseif a:0 == 3
             if filereadable(a:2)
-                " fike & hash
+                " file & hash
                 let file = a:2
                 let hash1 = ''
                 let hash2 = a:3
@@ -293,6 +305,31 @@ function! <SID>show_diff(hash) abort
     setlocal nomodifiable
 endfunction
 
+function! gitewer#view(mod, bra, file) abort
+    if !s:is_git_repo()
+        return
+    endif
+    if isdirectory(a:file)
+        echo a:file.."is a directory."
+        return
+    endif
+
+    let show_cmd = ['git', 'show', a:bra..':'..a:file]
+    if !has('nvim')
+        let show_cmd = join(show_cmd, ' ')
+    endif
+    let res = systemlist(show_cmd)
+
+    if empty(a:mod)
+        let mod = 'tab'
+    else
+        let mod = a:mod
+    endif
+    call <SID>buf_create(mod, '', a:bra..':'..a:file, res, v:false)
+    " call s:show_syntax()
+    setlocal nomodifiable
+endfunction
+
 function! gitewer#status(mod, ...) abort
     if !s:is_git_repo()
         return
@@ -363,7 +400,7 @@ function! gitewer#diff(file, hash1, hash2) abort
     endif
     if !filereadable(a:file)
         echohl WarningMsg
-        echo 'please open a file.'
+        echo 'File is not reabable, '..a:file
         echohl None
         return
     endif
@@ -375,8 +412,18 @@ function! gitewer#diff(file, hash1, hash2) abort
         return
     endif
 
+    let git_dir = finddir('.git', ';')
+    if empty(git_dir)
+        echohl WarningMsg
+        echo 'git directory is not found'
+        echohl None
+        return
+    endif
+    let top_dir = fnamemodify(git_dir, ':p:h:h')..'/'
+    " relative path
+    let file = substitute(fnamemodify(a:file, ':p'), top_dir, '', '')
     if !empty(a:hash1)
-        let diff_cmd = ['git', 'show', printf('%s:%s', a:hash1, a:file)]
+        let diff_cmd = ['git', 'show', printf('%s:%s', a:hash1, file)]
         if !has('nvim')
             let diff_cmd = join(diff_cmd, ' ')
         endif
@@ -389,7 +436,7 @@ function! gitewer#diff(file, hash1, hash2) abort
     endif
     let ft = &filetype
 
-    let diff_cmd = ['git', 'show', printf('%s:%s', a:hash2, a:file)]
+    let diff_cmd = ['git', 'show', printf('%s:%s', a:hash2, file)]
     if !has('nvim')
         let diff_cmd = join(diff_cmd, ' ')
     endif

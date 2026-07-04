@@ -32,14 +32,36 @@ function! s:get_hashes(arg) abort
     return filter(s:hashes, '!stridx(v:val, a:arg)')
 endfunction
 
+let s:branches = []
+function! s:get_branch(arg) abort
+    if !empty(s:branches)
+        return filter(s:branches, '!stridx(v:val, a:arg)')
+    endif
+
+    let bra_cmd = ['git', 'branch', '--all']
+    if !has('nvim')
+        let bra_cmd = join(bra_cmd, ' ')
+    endif
+    let bras = systemlist(bra_cmd)
+    for b in bras
+        let b2 = split(b)
+        if b2[0] == '*'
+            call add(s:branches, b2[1])
+        else
+            call add(s:branches, b2[0])
+        endif
+    endfor
+    return filter(s:branches, '!stridx(v:val, a:arg)')
+endfunction
+
 function! s:gitewer_comp(arglead, cmdline, cursorpos) abort
     let arglead = tolower(a:arglead)
     let cmdline = tolower(a:cmdline)
-    let opts = split('help log show status diff blame stash grep log-file', ' ')
+    let opts = split('help log show view status diff blame stash grep log-file', ' ')
     let cmdlines = split(cmdline, ' ', 1)
     let gi_idx = match(cmdlines, 'G.*')
     if len(cmdlines) <= gi_idx+2
-        return filter(opts, 'match(cmdline, v:val)==-1 && !stridx(tolower(v:val), arglead)')
+        return filter(opts, 'match(cmdlines[-1], v:val)==-1 && !stridx(tolower(v:val), arglead)')
     else
         let cur_opt = cmdlines[gi_idx+1]
         if cur_opt == 'help'
@@ -50,6 +72,12 @@ function! s:gitewer_comp(arglead, cmdline, cursorpos) abort
             return s:get_files(a:arglead)
         elseif cur_opt ==# 'show'
             return s:get_files(a:arglead)+filter(s:get_hashes(a:arglead), 'match(a:cmdline, v:val)==-1')
+        elseif cur_opt ==# 'view'
+            if len(cmdlines) == gi_idx+3
+                return s:get_branch(a:arglead)
+            else
+                return s:get_files(a:arglead)
+            endif
         elseif cur_opt ==# 'diff'
             if len(cmdlines) == gi_idx+3
                 return s:get_files(a:arglead)+filter(s:get_hashes(a:arglead), 'match(a:cmdline, v:val)==-1')
